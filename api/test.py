@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 app.users = {}
 app.id_count = 1 # new_user 등록시 카운트
+app.tweets=[]
 
 @app.route('/sign_up', methods=['POST'])# POST = 데이터 새로 생성시
 def sign_up():
@@ -30,7 +31,26 @@ def users():
         remvpw_user = {key : value for key, value in user.items() if key != "password"}
         # {만들형태  for 꺼낼값 in 반복대상  if 조건}
         # password가 아닐 시 user.items()에서 key, value를 key : velue형태로
-        # repw_user 딕셔너리에 추가(user 한명씩 추가) 
-        result.append(remvpw_user) # repw_user를 result리스트에 추가.
+        # remvpw_user 딕셔너리에 추가(user 한명씩 추가)
+        result.append(remvpw_user) # remvpw_user를 result리스트에 추가.
     return result
                               
+@app.route('/tweet', methods=['POST'])
+def tweet():
+    payload = request.json      # tweet = 안녕 입력 시 request.json 객체에 들어감.
+                                # payload 변수에 대입.
+    user_id=int(payload['id'])  # id = 1입력시 "1"문자열로 들어옴 int로 정수변환
+    tweet = payload['tweet']
+
+    if user_id not in app.users:
+        return '사용자가 존재하지 않습니다.', 400
+
+    if len(tweet) > 300:
+        return '300자를 초과했습니다.', 400
+    
+    app.tweets.append({
+        'user_id' : user_id,
+        'tweet'   : tweet
+    })
+
+    return jsonify(app.tweets), 200
