@@ -69,14 +69,22 @@ def insert_tweet(user_tweet):
         INSERT INTO tweets (
           user_id,
           tweet
-        )VALUES (
-          :id,
+        ) VALUES (
+          :user_id,
           :tweet
         )
         """), user_tweet)
         conn.commit()
         return result.rowcount
-    
+
+def delete_tweet(tweet_id):
+   with current_app.database.begin() as conn:
+       result = conn.execute(text("""
+           DELETE FROM tweets
+           WHERE id = :tweet_id
+       """), {'tweet_id': tweet_id})
+       return result.rowcount
+
 def insert_follow(user_follow):
     with current_app.database.connect() as conn:
         result = conn.execute(text("""
@@ -132,10 +140,18 @@ def create_app(test_config=None):
    database = create_engine(app.config['DB_URL'], max_overflow=0)
    app.database = database
 
+   @app.route('/tweet/<int:tweet_id>', methods=['DELETE'])
+   def delete_tweet_endpoint(tweet_id):
+       rows = delete_tweet(tweet_id)
+       if rows == 0:
+           return '트윗이 존재하지 않습니다.', 404
+       return '', 200
+
+
    @app.route('/users', methods=['GET'])
    def user_list():
     return jsonify(get_all_users())
-    
+
    # 메모리 기반 데이터 (4단계에서 DB로 교체 예정)
    # app.users = {}
    # app.id_count = 1
