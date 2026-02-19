@@ -42,7 +42,7 @@ def tweet():
     user_id=int(payload['id'])  # id = 1입력시 "1"문자열로 들어옴 int로 정수변환
     tweet = payload['tweet']
 
-    if user_id not in app.users:
+    if user_id not in app.users:    
         return '사용자가 존재하지 않습니다.', 400
 
     if len(tweet) > 300:
