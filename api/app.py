@@ -1,5 +1,6 @@
 from flask import Flask, request,jsonify
 from flask.json.provider import DefaultJSONProvider
+from sqlalchemy import creatae_engine, text
 import json
 
 class CustomJSONProvider(DefaultJSONProvider):
@@ -95,3 +96,18 @@ def timeline(user_id):
         'user_id': user_id,
         'timeline': timeline
     })
+
+def create_app(test_config = None):
+    app = Flask(__name__)
+
+    app.json_encoder = CustomJSONProvider
+
+    if test_config is None:
+        app.config.from_pyfile("config.py")
+    else:
+        app.config.update(test_config)
+
+    database = creatae_engine(app.config["DB_URL"], encoding ='utf-8', max_overflow = 0)
+    app.database = database
+
+return app
