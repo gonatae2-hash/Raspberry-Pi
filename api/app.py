@@ -45,6 +45,24 @@ def get_user(user_id):
         'profile' : user[3]
     } if user else None
 
+def get_all_users():
+    with current_app.database.connect() as conn:
+        users = conn.execute(text("""
+        SELECT
+          id,
+          name,
+          email,
+          profile
+        FROM users
+        """)).fetchall()
+
+    return [{
+        'id' :user[0],
+        'name' : user[1],
+        'email' : user[2],
+        'profile' : user[3]
+    }for user in users]
+
 def insert_tweet(user_tweet):
     with current_app.database.connect() as conn:
         result = conn.execute(text("""
@@ -114,6 +132,10 @@ def create_app(test_config=None):
    database = create_engine(app.config['DB_URL'], max_overflow=0)
    app.database = database
 
+   @app.route('/users', methods=['GET'])
+   def user_list():
+    return jsonify(get_all_users())
+    
    # 메모리 기반 데이터 (4단계에서 DB로 교체 예정)
    # app.users = {}
    # app.id_count = 1
