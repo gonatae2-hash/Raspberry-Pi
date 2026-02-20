@@ -1,0 +1,28 @@
+from flask import Flask, render_template, jsonify
+from datetime import datetime
+
+app = Flask(__name__)
+
+@app.route('/')
+
+def index():
+    records = [
+        {"temperature":25.3, "humidity":60.5},
+        {"temperature":27.1, "humidity":58.2},
+        {"temperature":29.4, "humidity":55.0},
+        {"temperature":20.8, "humidity":65.3},
+    ]
+    now = datetime.now().strftime("%Y년 %m월 %d일 %H:%M:%S")
+    return render_template("index.html",records=records, now=now)
+    #data = {"temperature": 28.1, "humidity": 60.5}
+    #return render_template("index.html", sensor=data)
+
+#@app.route('/api/senser')
+#def api_sensor():
+    #data = {"temperature": 25.3, "humidity": 60.5}
+
+    #return jsonify(data)
+
+if __name__ == '__main__':
+
+    app.run(debug=True)

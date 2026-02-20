@@ -1,0 +1,33 @@
+import serial # pyserial 라이브러리 사용, USB 시리얼 통신 가능하게 함.
+import time   # 시간 관련 기능 사용, 아래 time.sleep(2)에 사용
+
+from flask import Flask, render_template # render~.. HTML 파일 불러옴
+                                         # Python 데이터 HTML로 전달
+app =Flask(__name__)
+# Flask 앱 생성(웹 서버 역할).
+def read_sensor(): # 센서 읽기 전용 함수 생성(정의o 실행x)
+    try:                    # rpi usb 장치 ,    ,최대 2초 기다림.
+        ser = serial.Serial("/dev/ttyUSB0",9600,timeout=2)
+        time.sleep(2)                   # 통신 속도
+        # usb연결시 아두이노 자동 리셋, 2초 대기시간을 줘서 정상 수신.
+        line = ser.readline().decode("utf-8").strip()
+        #     바이트 데이터 읽기 ,   문자열 반환  , 줄바꿈 제거
+        # ex) b'25.3,60.5\r\n','25.3,60.5\r\n','25.3,60.5'
+        ser.close() # 포트 닫기 (충돌 예방)
+        parts = line.split(",") 
+        # 데이터 분리 ex) '25.3,60.5' => ['25.3', '60.5']
+        return {                           # float 숫자로 변환
+            "temperature":float(parts[0]), # "temperature": 25.3
+            "humidity": float(parts[1])    # "humidity": 60.5
+        }
+    except Exception as e:
+        print("센서 오류:",e) # 터미널에 "센서 오류" 출력
+        return {"temperature":None, "humidity":None}
+
+@app.route('/')
+def index():
+    data =read_sensor()
+    return render_template("index.html",sensor=data)
+
+if __name__ == '__main__':
+    app.run(debug=True)
